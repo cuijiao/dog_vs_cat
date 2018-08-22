@@ -68,31 +68,31 @@ def main(dog_vs_cat_images_dir, target_dir, val_ratio):
     if not os.path.exists(cat_dir):
         os.mkdir(cat_dir)
 
-    # dog_count = 0
-    # cat_count = 0
-    #
-    # for root, dirs, files in os.walk(dog_vs_cat_images_dir):
-    #     for file in files:
-    #         print('Processing: {}'.format(file))
-    #         ext = file.split(os.extsep)[-1]
-    #         if ext.lower() in IMAGE_FILES_EXT:
-    #             file_path = os.path.join(dog_vs_cat_images_dir, file)
-    #             if file.startswith('dog'):
-    #                 f_name = '{0:08d}'.format(dog_count)
-    #                 tar_path = os.path.join(dog_dir, '{}.{}'.format(f_name, ext))
-    #                 dog_count += 1
-    #             elif file.startswith('cat'):
-    #                 f_name = '{0:08d}'.format(cat_count)
-    #                 tar_path = os.path.join(cat_dir, '{}.{}'.format(f_name, ext))
-    #                 cat_count += 1
-    #             else:
-    #                 print('Do not know what this image is of {}'.format(file))
-    #                 continue
-    #
-    #             copyfile(file_path, tar_path)
-    #
-    # print('Dog images: {}'.format(dog_count))
-    # print('Cat images: {}'.format(cat_count))
+    dog_count = 0
+    cat_count = 0
+
+    for root, dirs, files in os.walk(dog_vs_cat_images_dir):
+        for file in files:
+            print('Processing: {}'.format(file))
+            ext = file.split(os.extsep)[-1]
+            if ext.lower() in IMAGE_FILES_EXT:
+                file_path = os.path.join(dog_vs_cat_images_dir, file)
+                if file.startswith('dog'):
+                    f_name = '{0:08d}'.format(dog_count)
+                    tar_path = os.path.join(dog_dir, '{}.{}'.format(f_name, ext))
+                    dog_count += 1
+                elif file.startswith('cat'):
+                    f_name = '{0:08d}'.format(cat_count)
+                    tar_path = os.path.join(cat_dir, '{}.{}'.format(f_name, ext))
+                    cat_count += 1
+                else:
+                    print('Do not know what this image is of {}'.format(file))
+                    continue
+
+                copyfile(file_path, tar_path)
+
+    print('Dog images: {}'.format(dog_count))
+    print('Cat images: {}'.format(cat_count))
 
     split_train_val(target_dir, val_ratio=val_ratio)
 
