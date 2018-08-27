@@ -7,7 +7,7 @@ from shutil import copyfile
 IMAGE_FILES_EXT = ['jpg', 'jpeg', 'png', 'gif']
 
 
-def split_train_val(target_dir, val_ratio=0.2):
+def split_train_val(target_dir, val_ratio=0.05):
     parent_dir = os.path.abspath(os.path.join(target_dir, '../'))
     print(parent_dir)
     curr_dir = target_dir.split(os.sep)[-1]
@@ -94,13 +94,13 @@ def main(dog_vs_cat_images_dir, target_dir, val_ratio):
     print('Dog images: {}'.format(dog_count))
     print('Cat images: {}'.format(cat_count))
 
-    split_train_val(target_dir, val_ratio=val_ratio)
+    # split_train_val(target_dir, val_ratio=val_ratio)
 
 
 if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument('dog_vs_cat_images_dir', type=str)
     parser.add_argument('target_dir', type=str)
-    parser.add_argument('--val_ratio', type=float, default=0.2)
+    parser.add_argument('--val_ratio', type=float, default=0.05)
     args = parser.parse_args(sys.argv[1:])
     main(args.dog_vs_cat_images_dir, args.target_dir, args.val_ratio)
