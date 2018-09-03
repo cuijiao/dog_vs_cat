@@ -8,10 +8,11 @@ IMAGE_FILES_EXT = ['jpg', 'jpeg', 'png', 'gif']
 
 
 def split_train_val(target_dir, val_ratio=0.05):
-    parent_dir = os.path.abspath(os.path.join(target_dir, '../'))
+    parent_dir = os.path.dirname(target_dir)
     print(parent_dir)
+    print(target_dir)
     curr_dir = target_dir.split(os.sep)[-1]
-    curr_dir = os.path.join(parent_dir, '{}_split'.format(curr_dir))
+    curr_dir = os.path.join(parent_dir, '{}_train_val_split'.format(curr_dir))
     if not os.path.exists(curr_dir):
         os.mkdir(curr_dir)
     train_dir = os.path.join(curr_dir, 'train')
@@ -61,6 +62,8 @@ def copy_files(target_dir, dir_, train_dir, val_dir, val_ratio):
 
 
 def main(dog_vs_cat_images_dir, target_dir, val_ratio):
+    if target_dir.endswith(os.sep):
+        target_dir = target_dir[:len(target_dir) - 1]
     dog_dir = os.path.join(target_dir, 'dog')
     cat_dir = os.path.join(target_dir, 'cat')
     if not os.path.exists(dog_dir):
@@ -94,13 +97,13 @@ def main(dog_vs_cat_images_dir, target_dir, val_ratio):
     print('Dog images: {}'.format(dog_count))
     print('Cat images: {}'.format(cat_count))
 
-    # split_train_val(target_dir, val_ratio=val_ratio)
+    split_train_val(target_dir, val_ratio=val_ratio)
 
 
 if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument('dog_vs_cat_images_dir', type=str)
     parser.add_argument('target_dir', type=str)
-    parser.add_argument('--val_ratio', type=float, default=0.05)
+    parser.add_argument('--val_ratio', type=float, default=0.1)
     args = parser.parse_args(sys.argv[1:])
     main(args.dog_vs_cat_images_dir, args.target_dir, args.val_ratio)

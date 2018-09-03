@@ -1,56 +1,70 @@
+import math
 import os
 import sys
 from argparse import ArgumentParser
+from decimal import Decimal
 
 import cv2
 import numpy as np
-from keras.engine.saving import load_model
 
-sys.path.append('/Users/jcui/MachineLearning/dog_vs_cat')
+from models.resetnet import build_resnet50_model
 from train.utils import read_img, save_img, put_txt
 
 image_ext = ['jpg', 'jpeg', 'png', 'gif']
 
-classes = ['cat', 'dog']
+input_size = 224
 
 
 def load(weight_path):
-    model = load_model(weight_path)
+    model, _ = build_resnet50_model(2, input_size)
+    model.load_weights(weight_path)
     model.summary()
     return model
 
 
-def main(weight_path, dataset, out_dir):
+def main(weight_path, dataset, out_dir, generate_output_image=True):
     model = load(weight_path=weight_path)
-    count = 1
+
+    count = 0
+    results = []
     for root, dirs, files in os.walk(dataset):
         for im_f in files:
-            ext = im_f.split(os.extsep)[-1]
+            split = im_f.split(os.extsep)
+            fname = split[0]
+            ext = split[-1]
+            count += 1
+            if count % 500 == 0:
+                print("{} done.".format(count))
             if ext in image_ext:
-                print('Processing: {}'.format(im_f))
                 image_file = os.path.join(dataset, im_f)
-                im = read_img(image_file, (224, 224), rescale=1 / 255.)
-                pred = model.predict(im)
-                print(pred)
-                idx = np.argmax(pred, axis=1)
-                label = classes[idx[0]]
-                fname = '{0:6d}'.format(count)
-                count += 1
-                f_name = os.path.join(out_dir, '{}_{}.{}'.format(fname, label, ext))
+                im = read_img(image_file, (input_size, input_size), rescale=1 / 255.)
+
+                pred = model.predict(im)[0]
+                f_name = os.path.join(out_dir, '{}'.format(im_f))
                 img = cv2.imread(image_file)
-                txt1 = 'cat: {0:.06f}%'.format(pred[0][0] * 100)
-                txt2 = 'dog: {0:.06f}%'.format(pred[0][1] * 100)
-                img = put_txt(img, txt1, (10, 30), (0, 255, 0))
-                img = put_txt(img, txt2, (10, 60), (0, 255, 0))
-                save_img(img, f_name)
-            else:
-                continue
+                if generate_output_image:
+                    txt1 = 'cat: {0:.06f}%'.format(pred[0] * 100)
+                    txt2 = 'dog: {0:.06f}%'.format(pred[1] * 100)
+                    img = put_txt(img, txt1, (10, 30), (0, 255, 0))
+                    img = put_txt(img, txt2, (10, 60), (0, 255, 0))
+                    save_img(img, f_name)
+
+                probability = '{}'.format(math.ceil(pred[1] * 1000.) / 1000.)
+                # print('{}: {}'.format(im_f, probability))
+                results.append((int(fname), probability))
+
+    results.sort(key=lambda x: x[0])
+    with open(os.path.join(out_dir, 'submission.csv'), 'w', encoding='utf-8') as f_submission:
+        f_submission.write('id,label\n')
+        for id, label in results:
+            f_submission.write('{},{}\n'.format(str(id), str(label)))
 
 
 if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument('weight_path', type=str)
     parser.add_argument('dataset', type=str)
-    parser.add_argument('--out_dir', type=str)
+    parser.add_argument('--out_dir', type=str, default='.')
+    parser.add_argument('--generate_output_image', type=bool, default=True)
     args = parser.parse_args(sys.argv[1:])
-    main(args.weight_path, args.dataset, args.out_dir)
+    main(args.weight_path, args.dataset, args.out_dir, args.generate_output_image)
