@@ -1,13 +1,10 @@
-import math
 import os
 import sys
 from argparse import ArgumentParser
-from decimal import Decimal
 
 import cv2
-import numpy as np
+from keras.engine.saving import load_model
 
-from models.resetnet import build_resnet50_model
 from train.utils import read_img, save_img, put_txt
 
 image_ext = ['jpg', 'jpeg', 'png', 'gif']
@@ -16,8 +13,7 @@ input_size = 224
 
 
 def load(weight_path):
-    model, _ = build_resnet50_model(2, input_size)
-    model.load_weights(weight_path)
+    model = load_model(weight_path)
     model.summary()
     return model
 
@@ -43,13 +39,13 @@ def main(weight_path, dataset, out_dir, generate_output_image=True):
                 f_name = os.path.join(out_dir, '{}'.format(im_f))
                 img = cv2.imread(image_file)
                 if generate_output_image:
-                    txt1 = 'cat: {0:.06f}%'.format(pred[0] * 100)
-                    txt2 = 'dog: {0:.06f}%'.format(pred[1] * 100)
+                    txt1 = 'cat: {0:.06f}%'.format((1 - pred[0]) * 100)
+                    txt2 = 'dog: {0:.06f}%'.format(pred[0] * 100)
                     img = put_txt(img, txt1, (10, 30), (0, 255, 0))
                     img = put_txt(img, txt2, (10, 60), (0, 255, 0))
                     save_img(img, f_name)
 
-                probability = '{}'.format(math.ceil(pred[1] * 1000.) / 1000.)
+                probability = pred[0]
                 # print('{}: {}'.format(im_f, probability))
                 results.append((int(fname), probability))
 

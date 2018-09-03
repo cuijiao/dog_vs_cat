@@ -63,7 +63,7 @@ def read_img(image_path, target_size, rescale=1):
     x = image.img_to_array(img)
     x = np.expand_dims(x, axis=0)
     x = preprocess_input(x)
-    # x *= rescale
+    x *= rescale
     return x
 
 
