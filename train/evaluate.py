@@ -11,7 +11,7 @@ image_ext = ['jpg', 'jpeg', 'png', 'gif']
 
 input_size = 224
 
-
+# 加载训练好的模型
 def load(weight_path):
     model = load_model(weight_path)
     model.summary()
@@ -33,7 +33,7 @@ def main(weight_path, dataset, out_dir, generate_output_image=True):
                 print("{} done.".format(count))
             if ext in image_ext:
                 image_file = os.path.join(dataset, im_f)
-                im = read_img(image_file, (input_size, input_size), rescale=1 / 255.)
+                im = read_img(image_file, (input_size, input_size), rescale=1 / 255.) #图片预处理
 
                 pred = model.predict(im)[0]
                 f_name = os.path.join(out_dir, '{}'.format(im_f))
@@ -49,7 +49,9 @@ def main(weight_path, dataset, out_dir, generate_output_image=True):
                 # print('{}: {}'.format(im_f, probability))
                 results.append((int(fname), probability))
 
-    results.sort(key=lambda x: x[0])
+    results.sort(key=lambda x: x[0]) #按照id进行排序
+
+    #生成submisison.csv
     with open(os.path.join(out_dir, 'submission.csv'), 'w', encoding='utf-8') as f_submission:
         f_submission.write('id,label\n')
         for id, label in results:
